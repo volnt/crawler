@@ -1,13 +1,19 @@
 import random
+
 from . import Tag, spritesheet
-from .game_object import LivingObject, LivingState
+from .living_object import LivingObject, LivingStateKind, LivingStateMachine
+from .state import State
+
+
+class PlayerStateMachine(LivingStateMachine):
+    states = {state.kind: state for state in (
+        State(LivingStateKind.IDLE, spritesheet.get_sprite((0, 1, 2, 3, 4, 5))),
+        State(LivingStateKind.CHOP, spritesheet.get_sprite((40, 41)))
+    )}
 
 
 class Player(LivingObject):
-    sprites = {
-        LivingState.IDLE: spritesheet.get_sprite((0, 1, 2, 3, 4, 5)),
-        LivingState.ATTACK: spritesheet.get_sprite((40, 41)),
-    }
+    state_machine = PlayerStateMachine
 
     def __init__(self, position):
         self.food = 100
@@ -18,11 +24,16 @@ class Player(LivingObject):
 
     def on_collide(self, collider):
         if collider.tag == Tag.ENEMY:
-            self.sprite = self.sprites[LivingState.ATTACK]
-
+            self.change_state(LivingStateKind.CHOP)
             collider.damage(random.randint(5, 15))
 
         elif collider.tag == Tag.FOOD:
-            from .scene import scene
             self.food += 20
-            scene.remove(collider)
+            collider.die()
+
+        elif collider.tag == Tag.EXIT:
+            from .scene import scene
+            scene.reset(scene.level + 1)
+
+    def change_state(self, state):
+        self.state_machine.state = self.state_machine.states[state]

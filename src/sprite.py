@@ -2,8 +2,10 @@ import time
 
 import pygame
 
+SPRITE_TIME_STEP = 200
 
-def time_picker(time_step=200):
+
+def time_picker(time_step=SPRITE_TIME_STEP):
     start_time = time.time() * 1000
 
     def picker(images):
@@ -17,9 +19,6 @@ class Sprite(object):
         self.images = images
         self.picker = picker or time_picker()
 
-    def subsprite(self, indexes, picker=None):
-        return Sprite([self.images[index] for index in indexes], picker)
-
     def draw(self, surface, point):
         surface.blit(self.picker(self.images), point.to_tuple())
 
@@ -30,7 +29,7 @@ class SpriteSheet(object):
         self.cell_size = cell_size
         self.spritesheet = pygame.image.load(filename).convert()
 
-    def get_sprite(self, indexes):
+    def get_sprite(self, indexes, time_step=SPRITE_TIME_STEP):
         images = []
         width, height = self.sprite_size
 
@@ -47,4 +46,4 @@ class SpriteSheet(object):
             image.set_colorkey((255, 255, 255))
             images.append(image)
 
-        return Sprite(images)
+        return Sprite(images, picker=time_picker(time_step=time_step))

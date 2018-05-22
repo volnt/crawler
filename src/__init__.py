@@ -57,3 +57,9 @@ class Point(object):
 
     def __add__(self, point):
         return Point(self.x + point.x, self.y + point.y)
+
+    def __sub__(self, point):
+        return Point(self.x - point.x, self.y - point.y)
+
+    def __bool__(self):
+        return self.x or self.y

@@ -21,9 +21,9 @@ class Enemy2StateMachine(LivingStateMachine):
 
 class Enemy(LivingObject):
     def __init__(self, position):
-        self.food = 15
-        from .scene import scene
-        self.player = scene.player
+        self.hp = 4
+        self.player = None
+        self.wait_turn = True
 
         super(Enemy, self).__init__(position, tag=Tag.ENEMY)
 
@@ -35,15 +35,39 @@ class Enemy(LivingObject):
         if collider.tag != Tag.PLAYER:
             return
 
-        collider.damage(random.randint(5, 15))
+        from .scene import scene
+
+        damage = random.randint(*self.damage)
+        scene.gui.action = "-{}".format(damage)
+        collider.take_damage(damage)
+        self.change_state(LivingStateKind.CHOP)
+
+    def get_player(self):
+        if self.player:
+            return self.player
+        from .scene import scene
+        self.player = scene.player
+        return self.player
 
     def update(self):
-        self.move(random.choice((Point(-1, 0), Point(1, 0), Point(0, -1), Point(0, 1))))
+        if self.wait_turn:
+            self.wait_turn = False
+            return
+        self.wait_turn = True
+
+        difference = self.get_player().position - self.position
+
+        if abs(difference.x) > abs(difference.y):
+            self.move(Point(difference.x / abs(difference.x), 0))
+        else:
+            self.move(Point(0, difference.y / abs(difference.y)))
 
 
 class Enemy1(Enemy):
     state_machine = Enemy1StateMachine
+    damage = (5, 15)
 
 
 class Enemy2(Enemy):
     state_machine = Enemy2StateMachine
+    damage = (15, 25)

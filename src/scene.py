@@ -1,8 +1,6 @@
 import math
 import random
 
-import pygame
-
 from . import GRID_SIZE, SCREEN_HEIGHT, SCREEN_WIDTH, Layer, Point, font
 from .enemy import Enemy
 from .exit import Exit
@@ -10,33 +8,27 @@ from .floor import Floor
 from .food import Food
 from .player import Player
 from .wall import OuterWall, Wall
-from .sprite import Sprite
 
 
 class Gui(object):
-    height = 50
-    width = 200
     layer = Layer.GUI
 
     def __init__(self, position):
-        self.image = pygame.Surface((self.width, self.height), pygame.SRCALPHA).convert()
-        self.image.fill((255, 255, 255))
-        self.image.set_alpha(64)
-        pygame.Surface.convert_alpha(self.image)
-        self.sprite = Sprite([self.image])
         self.position = position
+        self.action = ""
+        self.reset_action = False
 
     def update(self):
-        pass
+        if self.action and self.reset_action:
+            self.action = ""
+            self.reset_action = False
+        elif self.action:
+            self.reset_action = True
 
     def draw(self, surface):
-        self.text = font.render("Level {} | Food {}".format(scene.level, scene.player.food), True, (0, 0, 0))
-        self.image.fill((255, 255, 255))
-        self.image.set_alpha(64)
-        pygame.Surface.convert_alpha(self.image)
-        self.image.blit(self.text, (self.width / 2 - self.text.get_width() / 2,
-                                    self.height / 2 - self.text.get_height() / 2))
-        surface.blit(self.image, self.position.to_tuple())
+        self.text = font.render("{} Food: {}".format(self.action, scene.player.food), True, (255, 255, 255))
+        surface.blit(self.text, (self.position.x - self.text.get_width() / 2,
+                                 self.position.y))
 
 
 class Scene(object):
@@ -46,6 +38,7 @@ class Scene(object):
     def __init__(self, level):
         self.level = level
         self.player = None
+        self.gui = None
         self.reset(level)
 
     def add(self, game_object):
@@ -92,13 +85,13 @@ class Scene(object):
         food_count = random.randint(*self.food_count)
 
         for _ in xrange(food_count):
-            self.add(Food(grid_positions.pop()))
+            self.add(Food.create_random(grid_positions.pop()))
 
         # Place exit
         self.add(Exit(Point(width - 2, 1)))
 
         # Display GUI
-        self.gui = Gui(Point(SCREEN_WIDTH / 2 - Gui.width / 2, SCREEN_HEIGHT - Gui.height))
+        self.gui = Gui(Point(SCREEN_WIDTH / 2, SCREEN_HEIGHT - 50))
         self.add(self.gui)
 
     def draw(self, surface):

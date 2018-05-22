@@ -1,15 +1,7 @@
 import enum
 
 from . import Layer
-from .state import State
-
-
-class StateMachine(object):
-    def update(self):
-        pass
-
-    def draw(self, surface, point):
-        self.state.draw(surface, point)
+from .state import State, StateMachine
 
 
 class StateKind(enum.Enum):
@@ -38,9 +30,17 @@ class GameObject(object):
         self.state_machine.update()
         self.state_machine.draw(surface, self.position.to_absolute())
 
+    def take_damage(self, damage):
+        self.hp -= damage
+        if self.hp <= 0:
+            self.die()
+
     def on_collide(self, collider):
         pass
 
     def die(self):
         from .scene import scene
         scene.remove(self)
+
+    def change_state(self, state):
+        self.state_machine.state = self.state_machine.states[state]

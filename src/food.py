@@ -6,6 +6,7 @@ from .game_object import GameObject, basic_state_machine
 
 class Food(GameObject):
     state_machine = basic_state_machine(spritesheet.get_sprite((19,)))
+    value = 10
 
     def __init__(self, position):
         super(Food, self).__init__(
@@ -18,7 +19,8 @@ class Food(GameObject):
 
 class Soda(GameObject):
     state_machine = basic_state_machine(spritesheet.get_sprite((18,)))
+    value = 20
 
     def __init__(self, position):
-        super(Food, self).__init__(
+        super(Soda, self).__init__(
             tag=Tag.SODA, position=position)

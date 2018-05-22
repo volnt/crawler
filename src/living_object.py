@@ -2,13 +2,15 @@ import enum
 import time
 
 from . import Layer
-from .game_object import GameObject, StateMachine
+from .game_object import GameObject
 from .sprite import SPRITE_TIME_STEP
+from .state import StateMachine
 
 
 class LivingStateKind(enum.Enum):
     IDLE = 0
     CHOP = 1
+    CRY = 2
 
 
 class LivingStateMachine(StateMachine):
@@ -31,12 +33,6 @@ class LivingObject(GameObject):
 
     def on_move(self):
         pass
-
-    def damage(self, n):
-        self.food -= n
-        if self.food <= 0:
-            from .scene import scene
-            scene.remove(self)
 
     def collide_with(self, target):
         from .scene import scene

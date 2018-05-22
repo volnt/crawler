@@ -43,4 +43,4 @@ class GameObject(object):
         scene.remove(self)
 
     def change_state(self, state):
-        self.state_machine.state = self.state_machine.states[state]
+        self.state_machine.change_state(state)

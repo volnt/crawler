@@ -14,7 +14,8 @@ pygame.init()
 screen = pygame.display.set_mode(SCREEN_SIZE)
 clock = pygame.time.Clock()
 spritesheet = SpriteSheet("assets/Scavengers_SpriteSheet.png", SPRITE_SIZE, CELL_SIZE)
-font = pygame.font.Font(None, 24)
+font = pygame.font.Font("assets/PressStart2P-Regular.ttf", 24)
+pygame.mixer.Sound(file="assets/scavengers_music.ogg").play(loops=-1)
 
 
 class Layer(enum.Enum):

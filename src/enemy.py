@@ -1,5 +1,7 @@
 import random
 
+import pygame
+
 from . import Point, Tag, spritesheet
 from .living_object import LivingObject, LivingStateKind, LivingStateMachine
 from .state import State
@@ -31,16 +33,18 @@ class Enemy(LivingObject):
     def create_random(position):
         return random.choice((Enemy1, Enemy2))(position)
 
-    def on_collide(self, collider):
-        if collider.tag != Tag.PLAYER:
-            return
-
+    def attack(self, target):
         from .scene import scene
+        self.change_state(LivingStateKind.CHOP)
 
         damage = random.randint(*self.damage)
         scene.gui.action = "-{}".format(damage)
-        collider.take_damage(damage)
-        self.change_state(LivingStateKind.CHOP)
+        target.take_damage(damage)
+        self.chop_sound.play()
+
+    def on_collide(self, collider):
+        if collider.tag == Tag.PLAYER:
+            self.attack(collider)
 
     def get_player(self):
         if self.player:
@@ -66,8 +70,10 @@ class Enemy(LivingObject):
 class Enemy1(Enemy):
     state_machine = Enemy1StateMachine
     damage = (5, 15)
+    chop_sound = pygame.mixer.Sound(file="assets/scavengers_enemy1.ogg")
 
 
 class Enemy2(Enemy):
     state_machine = Enemy2StateMachine
     damage = (15, 25)
+    chop_sound = pygame.mixer.Sound(file="assets/scavengers_enemy2.ogg")

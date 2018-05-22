@@ -13,3 +13,6 @@ class StateMachine(object):
 
     def draw(self, surface, point):
         self.state.draw(surface, point)
+
+    def change_state(self, state):
+        self.state = self.states[state]

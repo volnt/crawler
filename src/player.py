@@ -51,6 +51,7 @@ class Player(LivingObject):
 
     def __init__(self, position):
         self.food = 100
+        self.dead = False
         super(Player, self).__init__(position, tag=Tag.PLAYER)
 
     def on_move(self):
@@ -60,6 +61,13 @@ class Player(LivingObject):
     def take_damage(self, damage):
         self.change_state(LivingStateKind.CRY)
         self.food -= damage
+        if self.food <= 0:
+            self.die()
+
+    def die(self):
+        from .scene import scene
+        self.dead = True
+        scene.reset(scene.level, True)
 
     def attack(self, target):
         self.change_state(LivingStateKind.CHOP)
@@ -79,7 +87,6 @@ class Player(LivingObject):
 
     def exit(self):
         from .scene import scene
-        scene.gui.action = "Day {}".format(scene.level + 1)
         scene.reset(scene.level + 1)
 
     def on_collide(self, collider):
@@ -90,4 +97,5 @@ class Player(LivingObject):
             self.eat(collider)
 
         elif collider.tag == Tag.EXIT:
+            self.position = collider.position
             self.exit()

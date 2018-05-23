@@ -22,7 +22,8 @@ class Layer(enum.Enum):
     FLOOR = 0
     BLOCKING = 1
     DEFAULT = 2
-    GUI = 3
+    LIVING = 3
+    GUI = 4
 
 
 class Tag(enum.Enum):

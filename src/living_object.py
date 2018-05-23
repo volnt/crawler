@@ -29,7 +29,7 @@ class LivingStateMachine(StateMachine):
 
 class LivingObject(GameObject):
     def __init__(self, position, tag=None):
-        super(LivingObject, self).__init__(layer=Layer.BLOCKING, tag=tag, position=position)
+        super(LivingObject, self).__init__(layer=Layer.LIVING, tag=tag, position=position)
 
     def on_move(self):
         pass
@@ -44,6 +44,10 @@ class LivingObject(GameObject):
             if blocking != self and blocking.position == target:
                 return blocking
 
+        for blocking in scene.objects[Layer.LIVING]:
+            if blocking != self and blocking.position == target:
+                return blocking
+
     def move(self, direction):
         target = self.position + direction
         collision = self.collide_with(target)
@@ -51,7 +55,7 @@ class LivingObject(GameObject):
         if collision:
             self.on_collide(collision)
 
-        if not collision or collision.layer != Layer.BLOCKING:
+        if not collision or collision.layer not in (Layer.BLOCKING, Layer.LIVING):
             self.on_move()
             self.position = target
             return True

@@ -1,5 +1,9 @@
 import math
 import random
+import sys
+import time
+
+import pygame
 
 from . import GRID_SIZE, SCREEN_HEIGHT, SCREEN_WIDTH, Layer, Point, font
 from .enemy import Enemy
@@ -8,6 +12,21 @@ from .floor import Floor
 from .food import Food
 from .player import Player
 from .wall import OuterWall, Wall
+
+
+class DayTransition(object):
+
+    def __init__(self, day, dead=False):
+        self.day = day
+        self.dead = dead
+        self.start = time.time() * 1000
+
+    def draw(self, surface):
+        if self.dead:
+            text = text = font.render("You starved on day {}".format(self.day), True, (255, 255, 255))
+        else:
+            text = font.render("Day {}".format(self.day), True, (255, 255, 255))
+        surface.blit(text, (SCREEN_WIDTH / 2 - text.get_width() / 2, SCREEN_HEIGHT / 2 - text.get_height() / 2))
 
 
 class Gui(object):
@@ -39,6 +58,8 @@ class Scene(object):
         self.level = level
         self.player = None
         self.gui = None
+        self.transition = None
+        self.transition_time = None
         self.reset(level)
 
     def add(self, game_object):
@@ -47,8 +68,11 @@ class Scene(object):
     def remove(self, game_object):
         self.objects[game_object.layer].remove(game_object)
 
-    def reset(self, level):
+    def reset(self, level, dead=False):
         self.level = level
+        self.transition = DayTransition(level, dead)
+
+    def post_transition(self):
         width, height = GRID_SIZE
         self.objects = {layer: [] for layer in Layer}
 
@@ -56,6 +80,7 @@ class Scene(object):
             self.player.position = Point(1, height - 2)
         else:
             self.player = Player(Point(1, height - 2))
+
         self.add(self.player)
 
         # Place outer walls and floor
@@ -95,13 +120,46 @@ class Scene(object):
         self.add(self.gui)
 
     def draw(self, surface):
+        if self.transition and (time.time() * 1000 - self.transition.start > 1000 or self.level < 2):
+            self.transition.draw(surface)
+            return
+
         for layer in Layer:
             for game_object in self.objects[layer]:
                 game_object.draw(surface)
 
-    def update(self):
+    def update_game_objects(self):
         for layer in Layer:
             for game_object in self.objects[layer]:
                 game_object.update()
+
+    def update(self):
+        events = pygame.event.get()
+
+        if self.transition and time.time() * 1000 - self.transition.start > 4000:
+            self.transition = None
+            if self.player and self.player.dead:
+                sys.exit()
+            self.post_transition()
+        if self.transition:
+            return
+
+        for event in events:
+            if event.type == pygame.QUIT:
+                sys.exit()
+            if event.type == pygame.KEYDOWN:
+                move = None
+                if event.key == pygame.K_LEFT:
+                    move = Point(-1, 0)
+                if event.key == pygame.K_RIGHT:
+                    move = Point(1, 0)
+                if event.key == pygame.K_UP:
+                    move = Point(0, -1)
+                if event.key == pygame.K_DOWN:
+                    move = Point(0, 1)
+
+                if move:
+                    scene.player.move(move)
+                    scene.update_game_objects()
 
 scene = Scene(1)

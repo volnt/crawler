@@ -36,17 +36,10 @@ class LivingObject(GameObject):
 
     def collide_with(self, target):
         from .scene import scene
-        for blocking in scene.objects[Layer.BLOCKING]:
-            if blocking != self and blocking.position == target:
-                return blocking
-
-        for blocking in scene.objects[Layer.DEFAULT]:
-            if blocking != self and blocking.position == target:
-                return blocking
-
-        for blocking in scene.objects[Layer.LIVING]:
-            if blocking != self and blocking.position == target:
-                return blocking
+        for layer in (Layer.BLOCKING, Layer.LIVING, Layer.DEFAULT):
+            for blocking in scene.objects[layer]:
+                if blocking != self and blocking.position == target:
+                    return blocking
 
     def move(self, direction):
         target = self.position + direction
